@@ -33,16 +33,16 @@ client.on('messageCreate', async (message) => {
     }
     try {
       const res = await axios.post(
-        "https://production.rhythia.com/api/acceptInvite",
-        JSON.stringify({
-          code: process.env.CLANCODE,
-          session: message.content.replace(/"/g, "")
-        }),
-        {
-          headers: {
-            "Content-Type": "application/json"
+          "https://production.rhythia.com/api/acceptInvite",
+          JSON.stringify({
+            code: "hkKZawYZ6Ny78EpXxRHRFL",
+            session: message.content.replace(/"/g, "")
+          }),
+          {
+            headers: {
+              "Content-Type": "application/json"
+            }
           }
-        }
       );
       await message.reply(`Status Code: ${res.status}, Text: ${JSON.stringify(res.data)}`);
     } catch (err) {
@@ -50,12 +50,12 @@ client.on('messageCreate', async (message) => {
     }
     return;
   }
-  
+
 
   if (message.content.toLowerCase() === '!update') {
     message.delete();
     if (!message.member.permissions.has('ADMINISTRATOR')) {
-      return message.reply('Du benötigst Administratorrechte, um diesen Befehl auszuführen.');
+      return message.reply('No Permissions.');
     }
     updateLeaderboard(message.member.id);
   }
@@ -63,7 +63,7 @@ client.on('messageCreate', async (message) => {
   if (message.content.toLowerCase().startsWith('!setuser')) {
     message.delete();
     if (!message.member.permissions.has('ADMINISTRATOR')) {
-      return message.reply('Du benötigst Administratorrechte, um diesen Befehl auszuführen.');
+      return message.reply('No Permissions.');
     }
     const args = message.content.split(' ');
     if (args.length !== 3) {
@@ -75,13 +75,13 @@ client.on('messageCreate', async (message) => {
     const members = JSON.parse(fs.readFileSync('members.json', 'utf8'));
     members[id] = discordid;
     fs.writeFileSync('members.json', JSON.stringify(members, null, 2));
-    message.reply(`Rhythia-ID ${id} wurde mit Discord-ID ${discordid} hinzugefügt/aktualisiert.`);
+    message.reply(`Rhythia-ID ${id} synced with Discord-ID ${discordid}.`);
   }
 
   if (message.content.toLowerCase() === '!leaderboard') {
     message.delete();
     if (!message.member.permissions.has('ADMINISTRATOR')) {
-      return message.reply('Du benötigst Administratorrechte, um diesen Befehl auszuführen.');
+      return message.reply('No Permissions.');
     }
 
     let msg = "loading...";
@@ -116,7 +116,7 @@ async function updateLeaderboard(reason) {
     });
 
     if (response.status === 421) {
-      console.error('Fehler 421: Rate Limiting oder ungültige Anfrage.');
+      console.error('Fehler 421: Rate Limit.');
       return;
     }
 
@@ -146,33 +146,33 @@ async function updateLeaderboard(reason) {
 
     const config = JSON.parse(fs.readFileSync('config.json', 'utf-8'));
     const leaderboardMessage = await client.channels.cache
-      .get(config.channelId)
-      .messages.fetch(config.leaderboardMessageId);
+        .get(config.channelId)
+        .messages.fetch(config.leaderboardMessageId);
 
-      let message = "# TOP 10 UwU Clan\n";
-      users.forEach((entry, index) => {
-        if (index < 10) {
-          message += `${index + 1}. :flag_${entry.flag.toLowerCase()}: [${entry.username.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{E0020}-\u{E007F}]/gu, '')}](<https://www.rhythia.com/player/${entry.id}>)`;
+    let message = "# TOP 10 UwU Clan\n";
+    users.forEach((entry, index) => {
+      if (index < 10) {
+        message += `${index + 1}. :flag_${entry.flag.toLowerCase()}: [${entry.username.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{E0020}-\u{E007F}]/gu, '')}](<https://www.rhythia.com/player/${entry.id}>)`;
 
-          if (getDiscordID(entry.id)) {
-              message += ` - <@${getDiscordID(entry.id)}>`;
+        if (getDiscordID(entry.id)) {
+          message += ` - <@${getDiscordID(entry.id)}>`;
+        }
+        leaderboardAT.data.leaderboard.forEach((user, index) => {
+          if (user.id === entry.id) {
+            message += `\n**#${index + 1} :flag_at: Austria**`
           }
-          leaderboardAT.data.leaderboard.forEach((user, index) => {
-            if (user.id === entry.id) {
-              message += `\n**#${index + 1} :flag_at: Österreich**`
-            }
-          });
-          leaderboardDE.data.leaderboard.forEach((user, index) => {
-            if (user.id === entry.id) {
-              message += `\n**#${index + 1} :flag_de: Deutschland**`
-            }
-          });
-          leaderboardCH.data.leaderboard.forEach((user, index) => {
-            if (user.id === entry.id) {
-              message += `\n**#${index + 1} :flag_ch: Schweiz**`
-            }
-          });
-          message += `\nSkill Points: \`${entry.skill_points.toFixed(2)}\`\n\n`;
+        });
+        leaderboardDE.data.leaderboard.forEach((user, index) => {
+          if (user.id === entry.id) {
+            message += `\n**#${index + 1} :flag_de: Germany**`
+          }
+        });
+        leaderboardCH.data.leaderboard.forEach((user, index) => {
+          if (user.id === entry.id) {
+            message += `\n**#${index + 1} :flag_ch: Switzerland**`
+          }
+        });
+        message += `\nSkill Points: \`${entry.skill_points.toFixed(2)}\`\n\n`;
       }
     });
     const now = new Date();
@@ -185,23 +185,23 @@ async function updateLeaderboard(reason) {
       second: '2-digit',
       hour12: false
     });
-    message += `\n_Zuletzt aktualisiert am ${timestamp.replace(',', ' um')} (${(reason === "auto") ? "Automatisch" : "Manuell von <@" + reason + ">"})_`;
+    message += `\n_Last updated ${timestamp.replace(',', ' at')} CET (${(reason === "auto") ? "Automaticly" : "Manually by <@" + reason + ">"})_`;
 
 
 
     await leaderboardMessage.edit({
-        content: message,
-        embeds: [],
-      });
+      content: message,
+      embeds: [],
+    });
     await leaderboardMessage.react('🔁');
   } catch (error) {
-    console.error('Fehler beim Abrufen der Leaderboard-Daten:', error);
+    console.error('Error:', error);
   }
 }
 
 function getDiscordID(rhythiaid) {
-    const members = JSON.parse(fs.readFileSync('members.json', 'utf8'));
-    return members[rhythiaid] || null;
+  const members = JSON.parse(fs.readFileSync('members.json', 'utf8'));
+  return members[rhythiaid] || null;
 }
 
 client.login(process.env.DISCORD_TOKEN);
